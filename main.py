@@ -18,6 +18,27 @@ bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     bot.send_message(message.chat.id, "Здравствуйте, приветствуем вас в нашем косметическом салоне!")
+
+@bot.message_handler(commands=['set_name'])
+def handle_set_name(message):
+    bot.send_message(message.chat.id, "Введите имя")
+    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message: save_client(message))    
+
+def save_client(message):
+    try:
+        with open('data.json', 'r', encoding='utf-8') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {"appointments": [], "review": [], "clients": {}}
+
+    #сохраняем имя пользователя
+    data['clients'][message.chat.id] = message.text
+
+    #запись обновленных данных в файл
+    with open('data.json', 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+    bot.send_message(message.chat.id, "Ваше имя сохранено")                    
     
 
 @bot.message_handler(commands=['show_dates'])
